@@ -4,17 +4,14 @@
 #include <chrono>
 
 
-
 enum class Direction { None, Up, Down, Left, Right };
 
 class Position {
   public:
       Position(int x = 5, int y = 10) : x(x), y(y) {}
 
-
       int getX() const { return x; }
       int getY() const { return y; }
-
 
       void setX(int newX) { x = newX; }
       void setY(int newY) { y = newY; }
@@ -86,7 +83,6 @@ void Draw(const Snake& snake, const Food& food, int x_axis, int y_axis) {
         std::cout << " ";
       }
 
-
     }
     std::cout << std::endl; 
   }
@@ -135,7 +131,6 @@ void Move(Snake& snake, Direction& lastDirection, std::chrono::steady_clock::tim
 }
 
 
-
 int main() {
   Snake snake(5, 10); 
   Food food(6, 16); 
@@ -154,9 +149,6 @@ int main() {
     }
     Move(snake, lastDirection, lastMoveTime); 
     Draw(snake, food,  x_axis, y_axis);
-
-    
-
 
     Sleep(10);
   }
