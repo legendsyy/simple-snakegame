@@ -2,7 +2,7 @@
 #include <cmath>
 #include <windows.h>
 #include <chrono>
-
+#include <fstream>
 
 enum class Direction { None, Up, Down, Left, Right };
 
@@ -26,7 +26,6 @@ class Snake {
 private:
     Position pos;
     int score = 0; 
-
 public:
     Snake(int x, int y) : pos(x, y) {}
 
@@ -65,12 +64,37 @@ class Food {
 }; 
 
 
+int readHighscore() {
+    std::ifstream file("highscore.txt");
+    int highscore = 0;
+    if (file.is_open()) {
+        file >> highscore;
+    }
+    return highscore;
+}
+
+void writeHighscore(int score) {
+    std::ofstream file("highscore.txt");
+    if (file.is_open()) {
+        file << score;
+    }
+}
+
 void Draw(const Snake& snake, const Food& food, int x_axis, int y_axis) {
   system("cls"); 
   int snake_x = snake.getSnakeX();
   int snake_y = snake.getSnakeY();
   int food_x = food.getFoodX();
   int food_y = food.getFoodY(); 
+  int score = snake.getScore();
+  int highscore = readHighscore();
+  std::cout << "Current score " << score << std::endl; 
+  if (score > highscore) {
+      std::cout << "Highscore: " << score << std::endl;
+      writeHighscore(score);
+  } else {
+      std::cout << "Highscore: " << highscore << std::endl;
+  }
   for (int row = 1; row <= x_axis; row++) {
     for (int col = 1; col <= y_axis; col++) {
       if (row == 1 || row == x_axis || col == 1 || col == y_axis) {
@@ -86,7 +110,6 @@ void Draw(const Snake& snake, const Food& food, int x_axis, int y_axis) {
     }
     std::cout << std::endl; 
   }
-  std::cout << "Current score " << snake.getScore() << std::endl; 
 }
 
 bool isOverBorder(const Snake& snake, int x_axis, int y_axis) {
@@ -131,29 +154,42 @@ void Move(Snake& snake, Direction& lastDirection, std::chrono::steady_clock::tim
 }
 
 
-int main() {
-  Snake snake(5, 10); 
-  Food food(6, 16); 
-  const int x_axis = 10; 
-  const int y_axis = 20; 
-  auto lastMoveTime = std::chrono::steady_clock::now(); 
-  Direction lastDirection = Direction::None;
-  while (true)
-  {
-    if(isOverBorder(snake, x_axis, y_axis)) {
-      break;
-    }
-    if (snake.getSnakeX() == food.getFoodX() && snake.getSnakeY() == food.getFoodY()) {
-      food.generateFood(x_axis, y_axis, snake);
-      snake.updateScore(); 
-    }
-    Move(snake, lastDirection, lastMoveTime); 
-    Draw(snake, food,  x_axis, y_axis);
+void playGame() {
+    Snake snake(5, 10); 
+    Food food(6, 16); 
+    const int x_axis = 10; 
+    const int y_axis = 20; 
+    auto lastMoveTime = std::chrono::steady_clock::now(); 
+    Direction lastDirection = Direction::None;
+    bool running = true; 
 
-    Sleep(10);
-  }
-  std::cout << "--------------------" <<std::endl; 
-  std::cout << "You lost with score " << snake.getScore() << std::endl; 
-  Sleep(5000); 
-  return 0; 
+    while (running) {
+        if(isOverBorder(snake, x_axis, y_axis)) {
+            running = false; 
+        }
+        if (snake.getSnakeX() == food.getFoodX() && snake.getSnakeY() == food.getFoodY()) {
+            food.generateFood(x_axis, y_axis, snake);
+            snake.updateScore(); 
+        }
+        Move(snake, lastDirection, lastMoveTime); 
+        Draw(snake, food,  x_axis, y_axis);
+        Sleep(10);
+    }
+
+    std::cout << "--------------------" <<std::endl; 
+    std::cout << "You lost with score " << snake.getScore() << std::endl; 
+    HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE); 
+    FlushConsoleInputBuffer(hStdin);
+}
+
+
+int main() {
+    char choice;
+    do {
+        playGame();
+        std::cout << "Do you wanna try again? (y/n) "; 
+        std::cin >> choice;
+    } while (choice == 'y' || choice == 'Y');
+
+    return 0; 
 }
